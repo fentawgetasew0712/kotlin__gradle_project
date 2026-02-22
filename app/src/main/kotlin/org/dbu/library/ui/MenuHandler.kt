@@ -53,4 +53,88 @@ fun handleMenuAction(
     }
 }
 
-TODO: implement all required functions to handle the menu actions
+fun addBook(service: LibraryService) {
+    println("Enter ISBN:")
+    val isbn = readln().trim()
+    println("Enter Title:")
+    val title = readln().trim()
+    println("Enter Author:")
+    val author = readln().trim()
+    println("Enter Year:")
+    val year = readln().trim().toIntOrNull() ?: 0
+
+    val book = Book(isbn, title, author, year)
+    if (service.addBook(book)) {
+        println("Book added successfully! ✅")
+    } else {
+        println("Book with ISBN $isbn already exists! ❌")
+    }
+}
+
+fun registerPatron(repository: LibraryRepository) {
+    println("Enter Patron ID:")
+    val id = readln().trim()
+    println("Enter Name:")
+    val name = readln().trim()
+
+    val patron = Patron(id, name)
+    if (repository.addPatron(patron)) {
+        println("Patron registered successfully! ✅")
+    } else {
+        println("Patron with ID $id already exists! ❌")
+    }
+}
+
+fun borrowBook(service: LibraryService) {
+    println("Enter Patron ID:")
+    val patronId = readln().trim()
+    println("Enter ISBN:")
+    val isbn = readln().trim()
+
+    val result = service.borrowBook(patronId, isbn)
+    when (result) {
+        BorrowResult.SUCCESS -> println("Book borrowed successfully! ✅")
+        BorrowResult.BOOK_NOT_FOUND -> println("Book not found! ❌")
+        BorrowResult.PATRON_NOT_FOUND -> println("Patron not found! ❌")
+        BorrowResult.NOT_AVAILABLE -> println("Book is already borrowed! ❌")
+        BorrowResult.LIMIT_REACHED -> println("Patron has reached the borrow limit (3 books)! ❌")
+    }
+}
+
+fun returnBook(service: LibraryService) {
+    println("Enter Patron ID:")
+    val patronId = readln().trim()
+    println("Enter ISBN:")
+    val isbn = readln().trim()
+
+    if (service.returnBook(patronId, isbn)) {
+        println("Book returned successfully! ✅")
+    } else {
+        println("Return failed! Check IDs and borrowed status. ❌")
+    }
+}
+
+fun search(service: LibraryService) {
+    println("Enter search query (Title or Author):")
+    val query = readln().trim()
+    val results = service.search(query)
+
+    if (results.isEmpty()) {
+        println("No books found for '$query'")
+    } else {
+        println("\nSearch Results:")
+        results.forEach { println("- ${it.title} by ${it.author} (${if (it.isAvailable) "Available" else "Borrowed"})") }
+    }
+}
+
+fun listAllBooks(repository: LibraryRepository) {
+    val books = repository.getAllBooks()
+    if (books.isEmpty()) {
+        println("No books in the library.")
+    } else {
+        println("\nLibrary Catalog:")
+        books.forEach {
+            println("- [${it.isbn}] ${it.title} by ${it.author} (${it.year}) - ${if (it.isAvailable) "Available" else "Borrowed"}")
+        }
+    }
+}
